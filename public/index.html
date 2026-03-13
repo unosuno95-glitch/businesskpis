@@ -6,71 +6,131 @@
 <title>Drink Tracker</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f1117; color: #e1e4e8; min-height: 100vh; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f1117; color: #e1e4e8; min-height: 100vh; display: flex; flex-direction: column; font-size: 16px; }
 
   .header { background: linear-gradient(135deg, #1a1e2e, #252a3a); padding: 20px 24px; border-bottom: 1px solid #2d333b; display: flex; justify-content: space-between; align-items: center; }
-  .header h1 { font-size: 1.4rem; font-weight: 600; }
+  .header h1 { font-size: 1.6rem; font-weight: 600; }
   .header h1 span { color: #f0883e; }
-  .header .date { color: #8b949e; font-size: 0.85rem; }
+  .header .date { color: #8b949e; font-size: 0.95rem; }
 
+  .layout { display: flex; flex: 1; }
+
+  /* Sidebar */
+  .sidebar { width: 260px; min-width: 260px; background: #161b22; border-right: 1px solid #2d333b; padding: 16px; display: flex; flex-direction: column; }
+  .sidebar h2 { font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px; color: #8b949e; margin-bottom: 12px; }
+  .trip-list { flex: 1; overflow-y: auto; }
+  .trip-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; border-radius: 8px; cursor: pointer; margin-bottom: 4px; transition: all 0.15s; border: 1px solid transparent; }
+  .trip-item:hover { background: #21262d; }
+  .trip-item.active { background: #f0883e18; border-color: #f0883e55; }
+  .trip-item .trip-name { font-size: 0.95rem; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .trip-item.active .trip-name { color: #f0883e; font-weight: 600; }
+  .trip-item .trip-count { font-size: 0.8rem; color: #484f58; margin-left: 8px; background: #21262d; padding: 2px 7px; border-radius: 10px; }
+  .trip-item.active .trip-count { background: #f0883e33; color: #f0883e; }
+  .trip-actions { display: flex; gap: 2px; margin-left: 6px; }
+  .trip-actions button { background: none; border: none; color: #484f58; cursor: pointer; font-size: 0.9rem; padding: 2px 4px; border-radius: 3px; }
+  .trip-actions button:hover { color: #e1e4e8; background: #30363d; }
+  .trip-actions .btn-del-trip:hover { color: #f85149; background: #f8514922; }
+  .new-trip { margin-bottom: 14px; }
+  .new-trip-row { display: flex; gap: 6px; }
+  .new-trip-row input { flex: 1; background: #0d1117; border: 1px solid #2d333b; color: #e1e4e8; padding: 8px 10px; border-radius: 8px; font-size: 0.9rem; }
+  .new-trip-row button { background: #f0883e; color: #000; border: none; padding: 8px 14px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9rem; }
+  .new-trip-row button:hover { background: #d2740e; }
+
+  /* Main */
+  .main { flex: 1; overflow-y: auto; }
   .container { max-width: 900px; margin: 0 auto; padding: 20px; }
 
-  /* Stats cards */
-  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
-  .stat-card { background: #161b22; border: 1px solid #2d333b; border-radius: 12px; padding: 16px; text-align: center; }
-  .stat-card .value { font-size: 1.8rem; font-weight: 700; color: #f0883e; }
-  .stat-card .label { font-size: 0.75rem; color: #8b949e; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+  /* Trip title */
+  .trip-title { font-size: 1.4rem; font-weight: 700; color: #e1e4e8; margin-bottom: 20px; }
+  .trip-title span { color: #f0883e; }
+
+  /* Mood banner */
+  .mood-banner { border-radius: 12px; padding: 18px 24px; margin-bottom: 24px; display: flex; align-items: center; gap: 14px; font-size: 1.1rem; font-weight: 600; }
+  .mood-banner .mood-icon { font-size: 1.8rem; }
+  .mood-banner .mood-text { flex: 1; }
+  .mood-banner .mood-sub { font-size: 0.85rem; font-weight: 400; margin-top: 4px; opacity: 0.85; }
+  .mood-banner.good { background: linear-gradient(135deg, #0d3320, #132f1e); border: 1px solid #1a7f37; color: #3fb950; }
+  .mood-banner.bad { background: linear-gradient(135deg, #3d1216, #31111b); border: 1px solid #da3633; color: #f85149; }
+  .mood-banner.neutral { background: linear-gradient(135deg, #1a1e2e, #252a3a); border: 1px solid #2d333b; color: #8b949e; }
+
+  /* Comparison bars */
+  .comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+  .comp-card { background: #161b22; border: 1px solid #2d333b; border-radius: 12px; padding: 20px; }
+  .comp-card h3 { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; }
+  .comp-card.alcoholic h3 { color: #3fb950; }
+  .comp-card.non-alcoholic h3 { color: #f85149; }
+  .comp-value { font-size: 2.2rem; font-weight: 700; margin-bottom: 8px; }
+  .comp-card.alcoholic .comp-value { color: #3fb950; }
+  .comp-card.non-alcoholic .comp-value { color: #f85149; }
+  .comp-bar-bg { height: 10px; background: #21262d; border-radius: 5px; overflow: hidden; }
+  .comp-bar-fill { height: 100%; border-radius: 5px; transition: width 0.4s ease; }
+  .comp-card.alcoholic .comp-bar-fill { background: linear-gradient(90deg, #3fb950, #238636); }
+  .comp-card.non-alcoholic .comp-bar-fill { background: linear-gradient(90deg, #f85149, #da3633); }
+  .comp-detail { font-size: 0.85rem; color: #8b949e; margin-top: 8px; }
 
   /* Quick add */
-  .quick-add { background: #161b22; border: 1px solid #2d333b; border-radius: 12px; padding: 20px; margin-bottom: 24px; }
-  .quick-add h2 { font-size: 1rem; margin-bottom: 14px; color: #c9d1d9; }
-  .drink-buttons { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
-  .drink-btn { background: #21262d; border: 1px solid #363b42; color: #e1e4e8; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: all 0.15s; }
-  .drink-btn:hover { background: #30363d; border-color: #f0883e; }
-  .drink-btn.active { background: #f0883e22; border-color: #f0883e; color: #f0883e; }
-  .add-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-  .add-row input, .add-row select { background: #0d1117; border: 1px solid #2d333b; color: #e1e4e8; padding: 8px 12px; border-radius: 8px; font-size: 0.85rem; }
-  .add-row input[type="date"] { width: 150px; }
-  .add-row input[type="number"] { width: 70px; }
-  .add-row input[type="text"] { width: 160px; }
-  .add-row input::-webkit-calendar-picker-indicator { filter: invert(1); }
-  .btn-add { background: #f0883e; color: #000; border: none; padding: 8px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.85rem; transition: background 0.15s; }
+  .quick-add { background: #161b22; border: 1px solid #2d333b; border-radius: 12px; padding: 16px 20px; margin-bottom: 24px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .drink-btn { background: #21262d; border: 1px solid #363b42; color: #e1e4e8; padding: 10px 24px; border-radius: 8px; cursor: pointer; font-size: 1.05rem; font-weight: 600; transition: all 0.15s; white-space: nowrap; flex: 1; text-align: center; }
+  .drink-btn:hover { background: #30363d; }
+  .drink-btn.alc { border-color: #3fb950; color: #3fb950; }
+  .drink-btn.alc:hover { background: #3fb95022; }
+  .drink-btn.alc.active { background: #3fb95033; border-color: #3fb950; color: #3fb950; }
+  .drink-btn.non-alc { border-color: #f85149; color: #f85149; }
+  .drink-btn.non-alc:hover { background: #f8514922; }
+  .drink-btn.non-alc.active { background: #f8514933; border-color: #f85149; color: #f85149; }
+  .add-ml { display: flex; align-items: center; gap: 6px; }
+  .add-ml input { background: #0d1117; border: 1px solid #2d333b; color: #e1e4e8; padding: 8px 10px; border-radius: 8px; font-size: 0.95rem; width: 80px; text-align: center; }
+  .add-ml span { color: #8b949e; font-size: 0.85rem; }
+  .btn-add { background: #f0883e; color: #000; border: none; padding: 8px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.95rem; transition: background 0.15s; }
   .btn-add:hover { background: #d2740e; }
 
   /* Chart */
   .chart-section { background: #161b22; border: 1px solid #2d333b; border-radius: 12px; padding: 20px; margin-bottom: 24px; }
-  .chart-section h2 { font-size: 1rem; margin-bottom: 14px; color: #c9d1d9; }
+  .chart-section h2 { font-size: 1.1rem; margin-bottom: 14px; color: #c9d1d9; }
   .chart { display: flex; align-items: flex-end; gap: 4px; height: 140px; padding-top: 10px; }
   .chart-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end; }
   .chart-bar { width: 100%; max-width: 36px; background: #f0883e; border-radius: 4px 4px 0 0; transition: height 0.3s; min-height: 2px; position: relative; }
   .chart-bar:hover { background: #ff9f55; }
-  .chart-bar .tooltip { display: none; position: absolute; top: -28px; left: 50%; transform: translateX(-50%); background: #30363d; color: #e1e4e8; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; white-space: nowrap; }
+  .chart-bar .tooltip { display: none; position: absolute; top: -28px; left: 50%; transform: translateX(-50%); background: #30363d; color: #e1e4e8; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; white-space: nowrap; z-index: 10; }
   .chart-bar:hover .tooltip { display: block; }
-  .chart-label { font-size: 0.65rem; color: #8b949e; margin-top: 6px; }
-  .chart-val { font-size: 0.7rem; color: #f0883e; margin-bottom: 2px; }
+  .chart-label { font-size: 0.75rem; color: #8b949e; margin-top: 6px; }
+  .chart-val { font-size: 0.8rem; color: #f0883e; margin-bottom: 2px; }
 
   /* Log */
   .log-section { background: #161b22; border: 1px solid #2d333b; border-radius: 12px; padding: 20px; }
-  .log-section h2 { font-size: 1rem; margin-bottom: 14px; color: #c9d1d9; }
+  .log-section h2 { font-size: 1.1rem; margin-bottom: 14px; color: #c9d1d9; }
   .log-day { margin-bottom: 16px; }
-  .log-day-header { font-size: 0.85rem; color: #f0883e; font-weight: 600; margin-bottom: 6px; display: flex; justify-content: space-between; }
+  .log-day-header { font-size: 0.95rem; color: #f0883e; font-weight: 600; margin-bottom: 6px; display: flex; justify-content: space-between; }
   .log-day-header .day-total { color: #8b949e; font-weight: 400; }
-  .log-entry { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #0d1117; border-radius: 8px; margin-bottom: 4px; font-size: 0.85rem; }
+  .log-entry { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #0d1117; border-radius: 8px; margin-bottom: 4px; font-size: 0.95rem; }
   .log-entry .drink-info { display: flex; gap: 12px; align-items: center; }
-  .log-entry .drink-type { background: #21262d; padding: 2px 10px; border-radius: 12px; font-size: 0.75rem; }
-  .log-entry .drink-type.beer { color: #f9c513; border: 1px solid #f9c51344; }
-  .log-entry .drink-type.wine { color: #bc4a8c; border: 1px solid #bc4a8c44; }
-  .log-entry .drink-type.spirit { color: #58a6ff; border: 1px solid #58a6ff44; }
-  .log-entry .drink-type.cocktail { color: #a5d6ff; border: 1px solid #a5d6ff44; }
-  .log-entry .drink-type.other { color: #8b949e; border: 1px solid #8b949e44; }
+  .log-entry .drink-type { background: #21262d; padding: 2px 10px; border-radius: 12px; font-size: 0.85rem; }
+  .log-entry .drink-type.alcoholic, .log-entry .drink-type.beer, .log-entry .drink-type.wine, .log-entry .drink-type.spirit, .log-entry .drink-type.cocktail { color: #3fb950; border: 1px solid #3fb95044; }
+  .log-entry .drink-type.non-alcoholic, .log-entry .drink-type.water, .log-entry .drink-type.juice, .log-entry .drink-type.soda, .log-entry .drink-type.coffee, .log-entry .drink-type.tea { color: #f85149; border: 1px solid #f8514944; }
   .btn-del { background: none; border: none; color: #484f58; cursor: pointer; font-size: 1rem; padding: 2px 6px; border-radius: 4px; }
   .btn-del:hover { color: #f85149; background: #f8514922; }
-  .empty { color: #484f58; text-align: center; padding: 30px; font-size: 0.9rem; }
+  .empty { color: #484f58; text-align: center; padding: 30px; font-size: 1rem; }
 
-  @media (max-width: 600px) {
-    .stats { grid-template-columns: repeat(2, 1fr); }
-    .add-row { flex-direction: column; align-items: stretch; }
-    .add-row input, .add-row select { width: 100% !important; }
+  /* Finish trip */
+  .trip-title-row { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; flex-wrap: wrap; }
+  .trip-title-row .trip-title { margin-bottom: 0; }
+  .btn-finish { padding: 8px 18px; border-radius: 8px; border: 1px solid #f0883e; background: #f0883e22; color: #f0883e; cursor: pointer; font-weight: 600; font-size: 0.9rem; transition: all 0.15s; }
+  .btn-finish:hover { background: #f0883e44; }
+  .btn-finish.reopen { border-color: #3fb950; background: #3fb95022; color: #3fb950; }
+  .btn-finish.reopen:hover { background: #3fb95044; }
+  .finished-badge { background: #21262d; color: #8b949e; padding: 4px 12px; border-radius: 12px; font-size: 0.8rem; border: 1px solid #30363d; }
+  .trip-item .finished-dot { width: 8px; height: 8px; border-radius: 50%; background: #3fb950; margin-left: 4px; flex-shrink: 0; }
+  .quick-add.disabled { opacity: 0.35; pointer-events: none; }
+
+  @media (max-width: 700px) {
+    .layout { flex-direction: column; }
+    .sidebar { width: 100%; min-width: 0; border-right: none; border-bottom: 1px solid #2d333b; flex-direction: row; gap: 10px; padding: 10px 16px; overflow-x: auto; }
+    .sidebar h2 { display: none; }
+    .trip-list { display: flex; gap: 6px; flex: none; overflow-x: auto; }
+    .trip-item { white-space: nowrap; margin-bottom: 0; }
+    .new-trip { margin-top: 0; }
+    .comparison { grid-template-columns: 1fr; }
+    .quick-add { justify-content: center; }
   }
 </style>
 </head>
@@ -79,50 +139,100 @@
   <h1><span>&#127866;</span> Drink Tracker</h1>
   <div class="date" id="today-date"></div>
 </div>
-<div class="container">
-  <div class="stats">
-    <div class="stat-card"><div class="value" id="s-today">0</div><div class="label">Today</div></div>
-    <div class="stat-card"><div class="value" id="s-week">0</div><div class="label">This Week</div></div>
-    <div class="stat-card"><div class="value" id="s-month">0</div><div class="label">This Month</div></div>
-    <div class="stat-card"><div class="value" id="s-avg">0</div><div class="label">Avg / Day</div></div>
-  </div>
-
-  <div class="quick-add">
-    <h2>Log a Drink</h2>
-    <div class="drink-buttons">
-      <button class="drink-btn" data-type="beer">&#127866; Beer</button>
-      <button class="drink-btn" data-type="wine">&#127863; Wine</button>
-      <button class="drink-btn" data-type="spirit">&#129347; Spirit</button>
-      <button class="drink-btn" data-type="cocktail">&#127865; Cocktail</button>
-      <button class="drink-btn" data-type="other">&#129380; Other</button>
+<div class="layout">
+  <div class="sidebar">
+    <h2>Trips</h2>
+    <div class="new-trip">
+      <div class="new-trip-row">
+        <input type="text" id="new-trip-name" placeholder="New trip name...">
+        <button id="btn-new-trip" onclick="createTrip()">+</button>
+      </div>
     </div>
-    <div class="add-row">
-      <input type="date" id="drink-date">
-      <input type="number" id="drink-amount" value="1" min="0.5" step="0.5" placeholder="Qty">
-      <input type="text" id="drink-note" placeholder="Note (optional)">
-      <button class="btn-add" id="btn-log">+ Log Drink</button>
+    <div class="trip-list" id="trip-list"></div>
+  </div>
+  <div class="main">
+    <div class="container">
+      <div class="trip-title-row">
+        <div class="trip-title" id="trip-title"></div>
+        <span class="finished-badge" id="finished-badge" style="display:none">Finished</span>
+        <button class="btn-finish" id="btn-finish" onclick="toggleFinish()" style="display:none">Finish Trip</button>
+      </div>
+
+      <div class="mood-banner neutral" id="mood-banner">
+        <div class="mood-icon" id="mood-icon">&#128064;</div>
+        <div>
+          <div class="mood-text" id="mood-text">Start logging drinks to see your status</div>
+          <div class="mood-sub" id="mood-sub">Add some beverages to get started</div>
+        </div>
+      </div>
+
+      <div class="comparison">
+        <div class="comp-card alcoholic">
+          <h3>Alcoholic</h3>
+          <div class="comp-value" id="alc-total">0 ml</div>
+          <div class="comp-bar-bg"><div class="comp-bar-fill" id="alc-bar" style="width:0%"></div></div>
+          <div class="comp-detail" id="alc-detail">0 drinks</div>
+        </div>
+        <div class="comp-card non-alcoholic">
+          <h3>Non-Alcoholic</h3>
+          <div class="comp-value" id="nonalc-total">0 ml</div>
+          <div class="comp-bar-bg"><div class="comp-bar-fill" id="nonalc-bar" style="width:0%"></div></div>
+          <div class="comp-detail" id="nonalc-detail">0 drinks</div>
+        </div>
+      </div>
+
+      <div class="quick-add" id="quick-add">
+        <button class="drink-btn alc active" data-type="alcoholic">&#127866; Alcoholic</button>
+        <button class="drink-btn non-alc" data-type="non-alcoholic">&#128167; Non-Alcoholic</button>
+        <div class="add-ml">
+          <input type="number" id="drink-amount" value="500" min="1" step="10">
+          <span>ml</span>
+        </div>
+        <button class="btn-add" id="btn-log">+ Add</button>
+      </div>
+
+      <div class="chart-section">
+        <h2>Last 14 Days</h2>
+        <div class="chart" id="chart"></div>
+      </div>
+
+      <div class="log-section">
+        <h2>Recent Drinks</h2>
+        <div id="log"></div>
+      </div>
     </div>
-  </div>
-
-  <div class="chart-section">
-    <h2>Last 14 Days</h2>
-    <div class="chart" id="chart"></div>
-  </div>
-
-  <div class="log-section">
-    <h2>Recent Drinks</h2>
-    <div id="log"></div>
   </div>
 </div>
 
 <script>
 const API = "/api";
-let selectedType = "beer";
+let selectedType = "alcoholic";
+let currentTripId = null;
 let allDrinks = [];
+let trips = [];
 
-// Init
+const ALCOHOLIC = new Set(["alcoholic", "beer", "wine", "spirit", "cocktail"]);
+
+const MOOD_GOOD = [
+  { text: "Now we're talking!", sub: "Alcohol is leading. That's what trips are for!" },
+  { text: "Cheers to that!", sub: "The drinks are flowing. Keep the party going!" },
+  { text: "Legend status!", sub: "More booze than water. You're doing it right!" },
+  { text: "Living the dream!", sub: "Alcoholic drinks in the lead. What a trip!" },
+  { text: "Party mode: ON!", sub: "This is what a proper trip looks like!" },
+];
+const MOOD_BAD = [
+  { text: "Come on, drink up!", sub: "Non-alcoholic drinks are winning. Fix that!" },
+  { text: "Is this a spa retreat?", sub: "Too much water, not enough fun. Step it up!" },
+  { text: "Boring alert!", sub: "The soft drinks are leading. Time to fix that!" },
+  { text: "Where's the party?", sub: "More juice than booze? Unacceptable!" },
+  { text: "Disappointing...", sub: "Non-alcoholic is winning. Hit the bar!" },
+];
+
+function pickMood(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
 document.getElementById("today-date").textContent = new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
-document.getElementById("drink-date").value = localDate();
 
 // Drink type buttons
 document.querySelectorAll(".drink-btn").forEach(btn => {
@@ -132,35 +242,158 @@ document.querySelectorAll(".drink-btn").forEach(btn => {
     selectedType = btn.dataset.type;
   });
 });
-document.querySelector('[data-type="beer"]').classList.add("active");
+
+// New trip
+document.getElementById("new-trip-name").addEventListener("keydown", e => { if (e.key === "Enter") createTrip(); });
+
+async function createTrip() {
+  const input = document.getElementById("new-trip-name");
+  const name = input.value.trim();
+  if (!name) { input.focus(); return; }
+  try {
+    const res = await fetch(`${API}/trips`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name })
+    });
+    const trip = await res.json();
+    input.value = "";
+    currentTripId = trip.id;
+    await loadTrips();
+    await loadDrinks();
+  } catch (err) {
+    alert("Error creating trip: " + err.message);
+  }
+}
+
+async function renameTrip(id) {
+  const trip = trips.find(t => t.id === id);
+  const name = prompt("Rename trip:", trip ? trip.name : "");
+  if (!name || !name.trim()) return;
+  await fetch(`${API}/trips/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name: name.trim() })
+  });
+  await loadTrips();
+}
+
+async function deleteTrip(id) {
+  if (!confirm("Delete this trip and all its drinks?")) return;
+  await fetch(`${API}/trips/${id}`, { method: "DELETE" });
+  if (currentTripId === id) currentTripId = null;
+  await loadTrips();
+  await loadDrinks();
+}
+
+function selectTrip(id) {
+  currentTripId = id;
+  renderTrips();
+  loadDrinks();
+}
+
+async function loadTrips() {
+  const res = await fetch(`${API}/trips`);
+  trips = await res.json();
+  if (!currentTripId && trips.length > 0) {
+    currentTripId = trips[0].id;
+  }
+  if (currentTripId && !trips.find(t => t.id === currentTripId) && trips.length > 0) {
+    currentTripId = trips[0].id;
+  }
+  renderTrips();
+}
+
+function isTripFinished() {
+  const trip = trips.find(t => t.id === currentTripId);
+  return trip && trip.finished;
+}
+
+async function toggleFinish() {
+  if (!currentTripId) return;
+  const trip = trips.find(t => t.id === currentTripId);
+  if (trip && !trip.finished) {
+    if (!confirm("Finish this trip? You won't be able to edit drinks anymore.")) return;
+  }
+  await fetch(`${API}/trips/${currentTripId}/finish`, { method: "PUT" });
+  await loadTrips();
+  await loadDrinks();
+}
+
+function renderTrips() {
+  const trip = trips.find(t => t.id === currentTripId);
+  document.getElementById("trip-title").innerHTML = trip ? `<span>&#9992;</span> ${esc(trip.name)}` : "";
+
+  // Finish button
+  const btnFinish = document.getElementById("btn-finish");
+  const badge = document.getElementById("finished-badge");
+  if (trip) {
+    btnFinish.style.display = "";
+    if (trip.finished) {
+      btnFinish.textContent = "Reopen Trip";
+      btnFinish.className = "btn-finish reopen";
+      badge.style.display = "";
+    } else {
+      btnFinish.textContent = "Finish Trip";
+      btnFinish.className = "btn-finish";
+      badge.style.display = "none";
+    }
+  } else {
+    btnFinish.style.display = "none";
+    badge.style.display = "none";
+  }
+
+  const list = document.getElementById("trip-list");
+  list.innerHTML = trips.map(t => `
+    <div class="trip-item ${t.id === currentTripId ? 'active' : ''}" onclick="selectTrip(${t.id})">
+      <div class="trip-name">${esc(t.name)}</div>
+      ${t.finished ? '<div class="finished-dot" title="Finished"></div>' : ''}
+      <span class="trip-count">${t.drink_count}</span>
+      <div class="trip-actions">
+        ${!t.finished ? `<button onclick="event.stopPropagation(); renameTrip(${t.id})" title="Rename">&#9998;</button>` : ''}
+        <button class="btn-del-trip" onclick="event.stopPropagation(); deleteTrip(${t.id})" title="Delete">&times;</button>
+      </div>
+    </div>
+  `).join("");
+}
 
 // Log drink
 document.getElementById("btn-log").addEventListener("click", async () => {
-  const date = document.getElementById("drink-date").value;
-  const amount = parseFloat(document.getElementById("drink-amount").value) || 1;
-  const note = document.getElementById("drink-note").value.trim();
-  if (!date) return;
-  await fetch(`${API}/drinks`, {
+  if (!currentTripId) return alert("Create a trip first!");
+  if (isTripFinished()) return;
+  const amount = parseFloat(document.getElementById("drink-amount").value) || 330;
+  await fetch(`${API}/trips/${currentTripId}/drinks`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ date, type: selectedType, amount, note })
+    body: JSON.stringify({ date: localDate(), type: selectedType, amount, note: "" })
   });
-  document.getElementById("drink-note").value = "";
-  document.getElementById("drink-amount").value = "1";
-  load();
+  await loadTrips();
+  await loadDrinks();
 });
 
-// Delete drink
 async function deleteDrink(id) {
   await fetch(`${API}/drinks/${id}`, { method: "DELETE" });
-  load();
+  await loadTrips();
+  await loadDrinks();
 }
 
-// Load data
-async function load() {
-  const res = await fetch(`${API}/drinks`);
+async function loadDrinks() {
+  if (!currentTripId) { allDrinks = []; renderAll(); return; }
+  const res = await fetch(`${API}/trips/${currentTripId}/drinks`);
   allDrinks = await res.json();
-  renderStats();
+  renderAll();
+}
+
+function renderAll() {
+  const finished = isTripFinished();
+  const quickAdd = document.getElementById("quick-add");
+  if (finished) {
+    quickAdd.classList.add("disabled");
+  } else {
+    quickAdd.classList.remove("disabled");
+  }
+  renderMood();
+  renderComparison();
   renderChart();
   renderLog();
 }
@@ -170,32 +403,52 @@ function localDate(d) {
   return dt.getFullYear() + "-" + String(dt.getMonth()+1).padStart(2,"0") + "-" + String(dt.getDate()).padStart(2,"0");
 }
 
-function renderStats() {
-  const today = localDate();
-  const todayTotal = allDrinks.filter(d => d.date === today).reduce((s, d) => s + d.amount, 0);
+function esc(s) {
+  const d = document.createElement("div"); d.textContent = s; return d.innerHTML;
+}
 
-  // This week (Mon-Sun)
-  const now = new Date();
-  const dayOfWeek = now.getDay() || 7;
-  const monday = new Date(now);
-  monday.setDate(now.getDate() - dayOfWeek + 1);
-  const weekStart = localDate(monday);
-  const weekTotal = allDrinks.filter(d => d.date >= weekStart && d.date <= today).reduce((s, d) => s + d.amount, 0);
+function renderMood() {
+  const banner = document.getElementById("mood-banner");
+  const icon = document.getElementById("mood-icon");
+  const text = document.getElementById("mood-text");
+  const sub = document.getElementById("mood-sub");
 
-  // This month
-  const monthStart = today.slice(0, 8) + "01";
-  const monthTotal = allDrinks.filter(d => d.date >= monthStart && d.date <= today).reduce((s, d) => s + d.amount, 0);
+  const alcMl = allDrinks.filter(d => ALCOHOLIC.has(d.type)).reduce((s, d) => s + d.amount, 0);
+  const nonAlcMl = allDrinks.filter(d => !ALCOHOLIC.has(d.type)).reduce((s, d) => s + d.amount, 0);
 
-  // Avg per day (last 30 days)
-  const d30 = new Date(); d30.setDate(d30.getDate() - 30);
-  const from30 = localDate(d30);
-  const last30 = allDrinks.filter(d => d.date >= from30).reduce((s, d) => s + d.amount, 0);
-  const avg = (last30 / 30).toFixed(1);
+  if (allDrinks.length === 0) {
+    banner.className = "mood-banner neutral";
+    icon.innerHTML = "&#128064;";
+    text.textContent = "Start logging drinks to see your status";
+    sub.textContent = "Add some beverages to get started";
+  } else if (alcMl >= nonAlcMl) {
+    const m = pickMood(MOOD_GOOD);
+    banner.className = "mood-banner good";
+    icon.innerHTML = "&#127881;";
+    text.textContent = m.text;
+    sub.textContent = m.sub;
+  } else {
+    const m = pickMood(MOOD_BAD);
+    banner.className = "mood-banner bad";
+    icon.innerHTML = "&#9888;&#65039;";
+    text.textContent = m.text;
+    sub.textContent = m.sub;
+  }
+}
 
-  document.getElementById("s-today").textContent = todayTotal;
-  document.getElementById("s-week").textContent = weekTotal;
-  document.getElementById("s-month").textContent = monthTotal;
-  document.getElementById("s-avg").textContent = avg;
+function renderComparison() {
+  const alcDrinks = allDrinks.filter(d => ALCOHOLIC.has(d.type));
+  const nonAlcDrinks = allDrinks.filter(d => !ALCOHOLIC.has(d.type));
+  const alcMl = alcDrinks.reduce((s, d) => s + d.amount, 0);
+  const nonAlcMl = nonAlcDrinks.reduce((s, d) => s + d.amount, 0);
+  const maxMl = Math.max(alcMl, nonAlcMl, 1);
+
+  document.getElementById("alc-total").textContent = alcMl.toLocaleString() + " ml";
+  document.getElementById("nonalc-total").textContent = nonAlcMl.toLocaleString() + " ml";
+  document.getElementById("alc-bar").style.width = (alcMl / maxMl * 100) + "%";
+  document.getElementById("nonalc-bar").style.width = (nonAlcMl / maxMl * 100) + "%";
+  document.getElementById("alc-detail").textContent = alcDrinks.length + " drink" + (alcDrinks.length !== 1 ? "s" : "");
+  document.getElementById("nonalc-detail").textContent = nonAlcDrinks.length + " drink" + (nonAlcDrinks.length !== 1 ? "s" : "");
 }
 
 function renderChart() {
@@ -209,14 +462,13 @@ function renderChart() {
     return { day, total: allDrinks.filter(d => d.date === day).reduce((s, d) => s + d.amount, 0) };
   });
   const max = Math.max(...totals.map(t => t.total), 1);
-
   chart.innerHTML = totals.map(t => {
     const h = t.total > 0 ? Math.max((t.total / max) * 110, 6) : 2;
     const dayLabel = new Date(t.day + "T12:00:00").toLocaleDateString("en", { weekday: "short" }).slice(0, 2);
     const dateLabel = t.day.slice(8);
     return `<div class="chart-bar-wrap">
       <div class="chart-val">${t.total || ""}</div>
-      <div class="chart-bar" style="height:${h}px"><div class="tooltip">${t.day}: ${t.total} drinks</div></div>
+      <div class="chart-bar" style="height:${h}px"><div class="tooltip">${t.day}: ${t.total} ml</div></div>
       <div class="chart-label">${dayLabel}<br>${dateLabel}</div>
     </div>`;
   }).join("");
@@ -228,33 +480,32 @@ function renderLog() {
     log.innerHTML = '<div class="empty">No drinks logged yet. Start tracking above!</div>';
     return;
   }
-  // Group by date
   const grouped = {};
   allDrinks.forEach(d => {
     if (!grouped[d.date]) grouped[d.date] = [];
     grouped[d.date].push(d);
   });
   const dates = Object.keys(grouped).sort().reverse().slice(0, 14);
-
   log.innerHTML = dates.map(date => {
     const items = grouped[date];
     const total = items.reduce((s, d) => s + d.amount, 0);
     const dateStr = new Date(date + "T12:00:00").toLocaleDateString("en", { weekday: "short", month: "short", day: "numeric" });
     return `<div class="log-day">
-      <div class="log-day-header"><span>${dateStr}</span><span class="day-total">${total} drink${total !== 1 ? "s" : ""}</span></div>
+      <div class="log-day-header"><span>${dateStr}</span><span class="day-total">${total.toLocaleString()} ml</span></div>
       ${items.map(d => `<div class="log-entry">
         <div class="drink-info">
           <span class="drink-type ${d.type}">${d.type}</span>
-          <span>${d.amount}x</span>
-          ${d.note ? `<span style="color:#8b949e">${d.note}</span>` : ""}
+          <span>${d.amount} ml</span>
+          ${d.note ? `<span style="color:#8b949e">${esc(d.note)}</span>` : ""}
         </div>
-        <button class="btn-del" onclick="deleteDrink(${d.id})">&times;</button>
+        ${!isTripFinished() ? `<button class="btn-del" onclick="deleteDrink(${d.id})">&times;</button>` : ''}
       </div>`).join("")}
     </div>`;
   }).join("");
 }
 
-load();
+// Init
+loadTrips().then(() => loadDrinks());
 </script>
 </body>
 </html>
