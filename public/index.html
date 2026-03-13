@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Drink Tracker</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f1117; color: #e1e4e8; min-height: 100vh; }
+
+  .header { background: linear-gradient(135deg, #1a1e2e, #252a3a); padding: 20px 24px; border-bottom: 1px solid #2d333b; display: flex; justify-content: space-between; align-items: center; }
+  .header h1 { font-size: 1.4rem; font-weight: 600; }
+  .header h1 span { color: #f0883e; }
+  .header .date { color: #8b949e; font-size: 0.85rem; }
+
+  .container { max-width: 900px; margin: 0 auto; padding: 20px; }
+
+  /* Stats cards */
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+  .stat-card { background: #161b22; border: 1px solid #2d333b; border-radius: 12px; padding: 16px; text-align: center; }
+  .stat-card .value { font-size: 1.8rem; font-weight: 700; color: #f0883e; }
+  .stat-card .label { font-size: 0.75rem; color: #8b949e; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  /* Quick add */
+  .quick-add { background: #161b22; border: 1px solid #2d333b; border-radius: 12px; padding: 20px; margin-bottom: 24px; }
+  .quick-add h2 { font-size: 1rem; margin-bottom: 14px; color: #c9d1d9; }
+  .drink-buttons { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+  .drink-btn { background: #21262d; border: 1px solid #363b42; color: #e1e4e8; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-size: 0.9rem; transition: all 0.15s; }
+  .drink-btn:hover { background: #30363d; border-color: #f0883e; }
+  .drink-btn.active { background: #f0883e22; border-color: #f0883e; color: #f0883e; }
+  .add-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  .add-row input, .add-row select { background: #0d1117; border: 1px solid #2d333b; color: #e1e4e8; padding: 8px 12px; border-radius: 8px; font-size: 0.85rem; }
+  .add-row input[type="date"] { width: 150px; }
+  .add-row input[type="number"] { width: 70px; }
+  .add-row input[type="text"] { width: 160px; }
+  .add-row input::-webkit-calendar-picker-indicator { filter: invert(1); }
+  .btn-add { background: #f0883e; color: #000; border: none; padding: 8px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.85rem; transition: background 0.15s; }
+  .btn-add:hover { background: #d2740e; }
+
+  /* Chart */
+  .chart-section { background: #161b22; border: 1px solid #2d333b; border-radius: 12px; padding: 20px; margin-bottom: 24px; }
+  .chart-section h2 { font-size: 1rem; margin-bottom: 14px; color: #c9d1d9; }
+  .chart { display: flex; align-items: flex-end; gap: 4px; height: 140px; padding-top: 10px; }
+  .chart-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end; }
+  .chart-bar { width: 100%; max-width: 36px; background: #f0883e; border-radius: 4px 4px 0 0; transition: height 0.3s; min-height: 2px; position: relative; }
+  .chart-bar:hover { background: #ff9f55; }
+  .chart-bar .tooltip { display: none; position: absolute; top: -28px; left: 50%; transform: translateX(-50%); background: #30363d; color: #e1e4e8; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; white-space: nowrap; }
+  .chart-bar:hover .tooltip { display: block; }
+  .chart-label { font-size: 0.65rem; color: #8b949e; margin-top: 6px; }
+  .chart-val { font-size: 0.7rem; color: #f0883e; margin-bottom: 2px; }
+
+  /* Log */
+  .log-section { background: #161b22; border: 1px solid #2d333b; border-radius: 12px; padding: 20px; }
+  .log-section h2 { font-size: 1rem; margin-bottom: 14px; color: #c9d1d9; }
+  .log-day { margin-bottom: 16px; }
+  .log-day-header { font-size: 0.85rem; color: #f0883e; font-weight: 600; margin-bottom: 6px; display: flex; justify-content: space-between; }
+  .log-day-header .day-total { color: #8b949e; font-weight: 400; }
+  .log-entry { display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #0d1117; border-radius: 8px; margin-bottom: 4px; font-size: 0.85rem; }
+  .log-entry .drink-info { display: flex; gap: 12px; align-items: center; }
+  .log-entry .drink-type { background: #21262d; padding: 2px 10px; border-radius: 12px; font-size: 0.75rem; }
+  .log-entry .drink-type.beer { color: #f9c513; border: 1px solid #f9c51344; }
+  .log-entry .drink-type.wine { color: #bc4a8c; border: 1px solid #bc4a8c44; }
+  .log-entry .drink-type.spirit { color: #58a6ff; border: 1px solid #58a6ff44; }
+  .log-entry .drink-type.cocktail { color: #a5d6ff; border: 1px solid #a5d6ff44; }
+  .log-entry .drink-type.other { color: #8b949e; border: 1px solid #8b949e44; }
+  .btn-del { background: none; border: none; color: #484f58; cursor: pointer; font-size: 1rem; padding: 2px 6px; border-radius: 4px; }
+  .btn-del:hover { color: #f85149; background: #f8514922; }
+  .empty { color: #484f58; text-align: center; padding: 30px; font-size: 0.9rem; }
+
+  @media (max-width: 600px) {
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .add-row { flex-direction: column; align-items: stretch; }
+    .add-row input, .add-row select { width: 100% !important; }
+  }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1><span>&#127866;</span> Drink Tracker</h1>
+  <div class="date" id="today-date"></div>
+</div>
+<div class="container">
+  <div class="stats">
+    <div class="stat-card"><div class="value" id="s-today">0</div><div class="label">Today</div></div>
+    <div class="stat-card"><div class="value" id="s-week">0</div><div class="label">This Week</div></div>
+    <div class="stat-card"><div class="value" id="s-month">0</div><div class="label">This Month</div></div>
+    <div class="stat-card"><div class="value" id="s-avg">0</div><div class="label">Avg / Day</div></div>
+  </div>
+
+  <div class="quick-add">
+    <h2>Log a Drink</h2>
+    <div class="drink-buttons">
+      <button class="drink-btn" data-type="beer">&#127866; Beer</button>
+      <button class="drink-btn" data-type="wine">&#127863; Wine</button>
+      <button class="drink-btn" data-type="spirit">&#129347; Spirit</button>
+      <button class="drink-btn" data-type="cocktail">&#127865; Cocktail</button>
+      <button class="drink-btn" data-type="other">&#129380; Other</button>
+    </div>
+    <div class="add-row">
+      <input type="date" id="drink-date">
+      <input type="number" id="drink-amount" value="1" min="0.5" step="0.5" placeholder="Qty">
+      <input type="text" id="drink-note" placeholder="Note (optional)">
+      <button class="btn-add" id="btn-log">+ Log Drink</button>
+    </div>
+  </div>
+
+  <div class="chart-section">
+    <h2>Last 14 Days</h2>
+    <div class="chart" id="chart"></div>
+  </div>
+
+  <div class="log-section">
+    <h2>Recent Drinks</h2>
+    <div id="log"></div>
+  </div>
+</div>
+
+<script>
+const API = "/api";
+let selectedType = "beer";
+let allDrinks = [];
+
+// Init
+document.getElementById("today-date").textContent = new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+document.getElementById("drink-date").value = localDate();
+
+// Drink type buttons
+document.querySelectorAll(".drink-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".drink-btn").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    selectedType = btn.dataset.type;
+  });
+});
+document.querySelector('[data-type="beer"]').classList.add("active");
+
+// Log drink
+document.getElementById("btn-log").addEventListener("click", async () => {
+  const date = document.getElementById("drink-date").value;
+  const amount = parseFloat(document.getElementById("drink-amount").value) || 1;
+  const note = document.getElementById("drink-note").value.trim();
+  if (!date) return;
+  await fetch(`${API}/drinks`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ date, type: selectedType, amount, note })
+  });
+  document.getElementById("drink-note").value = "";
+  document.getElementById("drink-amount").value = "1";
+  load();
+});
+
+// Delete drink
+async function deleteDrink(id) {
+  await fetch(`${API}/drinks/${id}`, { method: "DELETE" });
+  load();
+}
+
+// Load data
+async function load() {
+  const res = await fetch(`${API}/drinks`);
+  allDrinks = await res.json();
+  renderStats();
+  renderChart();
+  renderLog();
+}
+
+function localDate(d) {
+  const dt = d ? new Date(d) : new Date();
+  return dt.getFullYear() + "-" + String(dt.getMonth()+1).padStart(2,"0") + "-" + String(dt.getDate()).padStart(2,"0");
+}
+
+function renderStats() {
+  const today = localDate();
+  const todayTotal = allDrinks.filter(d => d.date === today).reduce((s, d) => s + d.amount, 0);
+
+  // This week (Mon-Sun)
+  const now = new Date();
+  const dayOfWeek = now.getDay() || 7;
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - dayOfWeek + 1);
+  const weekStart = localDate(monday);
+  const weekTotal = allDrinks.filter(d => d.date >= weekStart && d.date <= today).reduce((s, d) => s + d.amount, 0);
+
+  // This month
+  const monthStart = today.slice(0, 8) + "01";
+  const monthTotal = allDrinks.filter(d => d.date >= monthStart && d.date <= today).reduce((s, d) => s + d.amount, 0);
+
+  // Avg per day (last 30 days)
+  const d30 = new Date(); d30.setDate(d30.getDate() - 30);
+  const from30 = localDate(d30);
+  const last30 = allDrinks.filter(d => d.date >= from30).reduce((s, d) => s + d.amount, 0);
+  const avg = (last30 / 30).toFixed(1);
+
+  document.getElementById("s-today").textContent = todayTotal;
+  document.getElementById("s-week").textContent = weekTotal;
+  document.getElementById("s-month").textContent = monthTotal;
+  document.getElementById("s-avg").textContent = avg;
+}
+
+function renderChart() {
+  const chart = document.getElementById("chart");
+  const days = [];
+  for (let i = 13; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    days.push(localDate(d));
+  }
+  const totals = days.map(day => {
+    return { day, total: allDrinks.filter(d => d.date === day).reduce((s, d) => s + d.amount, 0) };
+  });
+  const max = Math.max(...totals.map(t => t.total), 1);
+
+  chart.innerHTML = totals.map(t => {
+    const h = t.total > 0 ? Math.max((t.total / max) * 110, 6) : 2;
+    const dayLabel = new Date(t.day + "T12:00:00").toLocaleDateString("en", { weekday: "short" }).slice(0, 2);
+    const dateLabel = t.day.slice(8);
+    return `<div class="chart-bar-wrap">
+      <div class="chart-val">${t.total || ""}</div>
+      <div class="chart-bar" style="height:${h}px"><div class="tooltip">${t.day}: ${t.total} drinks</div></div>
+      <div class="chart-label">${dayLabel}<br>${dateLabel}</div>
+    </div>`;
+  }).join("");
+}
+
+function renderLog() {
+  const log = document.getElementById("log");
+  if (allDrinks.length === 0) {
+    log.innerHTML = '<div class="empty">No drinks logged yet. Start tracking above!</div>';
+    return;
+  }
+  // Group by date
+  const grouped = {};
+  allDrinks.forEach(d => {
+    if (!grouped[d.date]) grouped[d.date] = [];
+    grouped[d.date].push(d);
+  });
+  const dates = Object.keys(grouped).sort().reverse().slice(0, 14);
+
+  log.innerHTML = dates.map(date => {
+    const items = grouped[date];
+    const total = items.reduce((s, d) => s + d.amount, 0);
+    const dateStr = new Date(date + "T12:00:00").toLocaleDateString("en", { weekday: "short", month: "short", day: "numeric" });
+    return `<div class="log-day">
+      <div class="log-day-header"><span>${dateStr}</span><span class="day-total">${total} drink${total !== 1 ? "s" : ""}</span></div>
+      ${items.map(d => `<div class="log-entry">
+        <div class="drink-info">
+          <span class="drink-type ${d.type}">${d.type}</span>
+          <span>${d.amount}x</span>
+          ${d.note ? `<span style="color:#8b949e">${d.note}</span>` : ""}
+        </div>
+        <button class="btn-del" onclick="deleteDrink(${d.id})">&times;</button>
+      </div>`).join("")}
+    </div>`;
+  }).join("");
+}
+
+load();
+</script>
+</body>
+</html>
